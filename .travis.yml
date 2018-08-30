@@ -2,6 +2,13 @@ sudo: false
 
 language: python
 
+services:
+  - docker
+
+before_install:
+- docker pull nats:1.2.0
+- docker run -d -p 4222:4222 nats:1.2.0
+
 matrix:
   include:
     - python: 3.7
