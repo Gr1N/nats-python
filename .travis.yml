@@ -1,0 +1,39 @@
+sudo: false
+
+language: python
+
+matrix:
+  include:
+    - python: 3.7
+      dist: xenial
+      sudo: true
+      env: TOXENV=py37-black
+    - python: 3.7
+      dist: xenial
+      sudo: true
+      env: TOXENV=py37-flake8
+    - python: 3.7
+      dist: xenial
+      sudo: true
+      env: TOXENV=py37-isort
+    - python: 3.7
+      dist: xenial
+      sudo: true
+      env: TOXENV=py37-mypy
+    - python: 3.6
+      dist: trusty
+      sudo: false
+      env: TOXENV=py36-tests
+    - python: 3.7
+      dist: xenial
+      sudo: true
+      env: TOXENV=py37-tests
+
+install:
+  - pip install codecov poetry tox
+
+script:
+  - tox
+
+after_success:
+  - codecov

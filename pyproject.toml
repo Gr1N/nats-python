@@ -1,0 +1,57 @@
+[tool.black]
+line-length = 88
+py36 = true
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | \.vscode
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.poetry]
+name = "nats-python"
+version = "0.1.0-alpha.0"
+description = "Python client for NATS messaging system"
+authors = [
+    "Nikita Grishko <gr1n@protonmail.com>"
+]
+license = "MIT"
+
+readme = "README.md"
+
+homepage = "https://github.com/Gr1N/nats-python"
+repository = "https://github.com/Gr1N/nats-python"
+
+packages = [
+    { include = "pynats" }
+]
+
+keywords = ["nats", "nats-client", "messaging"]
+
+classifiers = [
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+dataclasses = { version = "*", python = "~3.6" }
+
+[tool.poetry.dev-dependencies]
+black = "*"
+flake8 = "*"
+flake8-bugbear = "*"
+isort = "*"
+mypy = "*"
+pytest = "*"
+pytest-cov = "*"
+tox = "^3.0.0"
