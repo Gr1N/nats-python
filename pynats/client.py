@@ -51,7 +51,7 @@ INBOX_PREFIX = bytearray(b"_INBOX.")
 
 @dataclass
 class NATSSubscription:
-    sid: str
+    sid: int
     subject: str
     queue: str
     callback: Callable
@@ -67,7 +67,7 @@ class NATSSubscription:
 
 @dataclass
 class NATSMessage:
-    sid: str
+    sid: int
     subject: str
     reply: str
     payload: bytes
@@ -79,6 +79,7 @@ class NATSClient:
         "_socket",
         "_socket_file",
         "_socket_options",
+        "_ssid",
         "_subs",
         "_nuid",
     )
@@ -115,7 +116,8 @@ class NATSClient:
             "keepalive": socket_keepalive,
         }
 
-        self._subs: Dict[str, NATSSubscription] = {}
+        self._ssid = 0
+        self._subs: Dict[int, NATSSubscription] = {}
         self._nuid = NUID()
 
     def __enter__(self) -> "NATSClient":
@@ -154,13 +156,14 @@ class NATSClient:
         max_messages: Optional[int] = None,
     ) -> NATSSubscription:
         sub = NATSSubscription(
-            sid=self._nuid.next_().decode(),
+            sid=self._ssid,
             subject=subject,
             queue="",
             callback=callback,
             max_messages=max_messages,
         )
 
+        self._ssid += 1
         self._subs[sub.sid] = sub
         self._send(SUB_OP, sub.subject, sub.queue, sub.sid)
 
@@ -171,10 +174,13 @@ class NATSClient:
         self._subs.pop(sub.sid)
 
     def auto_unsubscribe(self, sub: NATSSubscription) -> None:
-        self._send(UNSUB_OP, sub.sid, f"{sub.max_messages:d}")
+        if sub.max_messages is None:
+            return
+
+        self._send(UNSUB_OP, sub.sid, sub.max_messages)
 
     def publish(self, subject: str, *, payload: bytes = b"", reply: str = "") -> None:
-        self._send(PUB_OP, subject, reply, f"{len(payload):d}")
+        self._send(PUB_OP, subject, reply, len(payload))
         self._send(payload)
 
     def request(self, subject: str, *, payload: bytes = b"") -> NATSMessage:
@@ -182,7 +188,7 @@ class NATSClient:
         next_inbox.extend(self._nuid.next_())
 
         reply_subject = next_inbox.decode()
-        reply_messages: Dict[str, NATSMessage] = {}
+        reply_messages: Dict[int, NATSMessage] = {}
 
         def callback(message: NATSMessage) -> None:
             reply_messages[message.sid] = message
@@ -242,10 +248,18 @@ class NATSClient:
 
         self._send(CONNECT_OP, json.dumps(options))
 
-    def _send(self, *parts: Union[bytes, str]) -> None:
-        self._socket.sendall(
-            _SPC_.join(p.encode() if isinstance(p, str) else p for p in parts) + _CRLF_
-        )
+    def _send(self, *parts: Union[bytes, str, int]) -> None:
+        self._socket.sendall(_SPC_.join(self._encode(p) for p in parts) + _CRLF_)
+
+    def _encode(self, value: Union[bytes, str, int]) -> bytes:
+        if isinstance(value, bytes):
+            return value
+        elif isinstance(value, str):
+            return value.encode()
+        elif isinstance(value, int):
+            return f"{value:d}".encode()
+
+        raise RuntimeError(f"got unsupported type for encoding: type={type(value)}")
 
     def _recv(self, *commands: Pattern[bytes]) -> Tuple[Pattern[bytes], Match[bytes]]:
         line = self._readline()
@@ -282,7 +296,7 @@ class NATSClient:
         message_payload = self._readline().strip()
 
         message = NATSMessage(
-            sid=message_data["sid"].decode(),
+            sid=int(message_data["sid"].decode()),
             subject=message_data["subject"].decode(),
             reply=message_data["reply"].decode() if message_data["reply"] else "",
             payload=message_payload,
