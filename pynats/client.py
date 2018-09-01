@@ -128,9 +128,17 @@ class NATSClient:
         self.close()
 
     def connect(self) -> None:
-        self._build_socket()
-        self._connect_socket()
-        self._build_socket_file()
+        sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        if self._socket_options["keepalive"]:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+
+        sock.settimeout(self._socket_options["timeout"])
+        sock.connect((self._conn_options["hostname"], self._conn_options["port"]))
+
+        self._socket_file = sock.makefile("rb")
+        self._socket = sock
 
         self._send_connect_command()
         self._recv(INFO_RE)
@@ -212,23 +220,6 @@ class NATSClient:
                     break
             elif command is PING_RE:
                 self._send(PONG_OP)
-
-    def _build_socket(self) -> None:
-        self._socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-
-        self._socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        if self._socket_options["keepalive"]:
-            self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-
-        self._socket.settimeout(self._socket_options["timeout"])
-
-    def _connect_socket(self) -> None:
-        self._socket.connect(
-            (self._conn_options["hostname"], self._conn_options["port"])
-        )
-
-    def _build_socket_file(self) -> None:
-        self._socket_file = self._socket.makefile("rb")
 
     def _send_connect_command(self) -> None:
         options = {
