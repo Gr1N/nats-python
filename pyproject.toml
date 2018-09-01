@@ -19,7 +19,7 @@ exclude = '''
 
 [tool.poetry]
 name = "nats-python"
-version = "0.2.0-alpha.0"
+version = "0.2.0"
 description = "Python client for NATS messaging system"
 authors = [
     "Nikita Grishko <gr1n@protonmail.com>"
