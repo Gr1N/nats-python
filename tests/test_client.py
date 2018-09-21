@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 
+import msgpack
 import pytest
 
 from pynats import NATSClient
@@ -126,6 +127,39 @@ def test_request():
         assert resp.subject.startswith("_INBOX.")
         assert resp.reply == ""
         assert resp.payload == b"test-callback-payload"
+
+    t.join()
+
+
+def test_request_msgpack():
+    def worker():
+        with NATSClient(socket_timeout=2) as client:
+
+            def callback(message):
+                client.publish(message.reply, payload=msgpack.packb(32))
+
+            client.subscribe(
+                "test-subject", callback=callback, queue="test-queue", max_messages=2
+            )
+            client.wait(count=2)
+
+    t = threading.Thread(target=worker)
+    t.start()
+
+    time.sleep(1)
+
+    with NATSClient(socket_timeout=2) as client:
+        # request without payload
+        resp = client.request("test-subject")
+        assert resp.subject.startswith("_INBOX.")
+        assert resp.reply == ""
+        assert msgpack.unpackb(resp.payload) == 32
+
+        # request with payload
+        resp = client.request("test-subject", payload=msgpack.packb("test-payload"))
+        assert resp.subject.startswith("_INBOX.")
+        assert resp.reply == ""
+        assert msgpack.unpackb(resp.payload) == 32
 
     t.join()
 

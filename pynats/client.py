@@ -278,13 +278,13 @@ class NATSClient:
         return b"".join(lines)
 
     def _get_command(self, line: bytes) -> Optional[Pattern[bytes]]:
-        values = line.strip().split(b" ", 1)
+        values = line.replace(_CRLF_, b"").split(b" ", 1)
 
         return COMMANDS.get(values[0])
 
     def _handle_message(self, result: Match[bytes]) -> None:
         message_data = result.groupdict()
-        message_payload = self._readline().strip()
+        message_payload = self._readline().replace(_CRLF_, b"")
 
         message = NATSMessage(
             sid=int(message_data["sid"].decode()),
