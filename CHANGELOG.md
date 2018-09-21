@@ -2,7 +2,7 @@
 
 ## 0.3.0 (2018-XX-XX)
 
-- Improved receive messages logic: `.strip()` replaced with `.replace()`
+- Improved receive messages logic
 - Fixed regex deprecation warnings
 
 ## 0.2.0 (2018-09-01)

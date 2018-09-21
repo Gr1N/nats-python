@@ -265,26 +265,35 @@ class NATSClient:
 
         return command, result
 
-    def _readline(self) -> bytes:
-        lines = []
+    def _readline(self, *, size: int = None) -> bytes:
+        read = b""
 
         while True:
             line = cast(bytes, self._socket_file.readline())
-            lines.append(line)
+            read += line
 
-            if line.endswith(_CRLF_):
+            if size is not None:
+                if len(self._strip(read)) == size:
+                    break
+            elif line.endswith(_CRLF_):
                 break
 
-        return b"".join(lines)
+        return read
+
+    def _strip(self, line: bytes) -> bytes:
+        return line[: -len(_CRLF_)]
 
     def _get_command(self, line: bytes) -> Optional[Pattern[bytes]]:
-        values = line.replace(_CRLF_, b"").split(b" ", 1)
+        values = self._strip(line).split(b" ", 1)
 
         return COMMANDS.get(values[0])
 
     def _handle_message(self, result: Match[bytes]) -> None:
         message_data = result.groupdict()
-        message_payload = self._readline().replace(_CRLF_, b"")
+
+        message_payload_size = int(message_data["size"])
+        message_payload = self._readline(size=message_payload_size)
+        message_payload = self._strip(message_payload)
 
         message = NATSMessage(
             sid=int(message_data["sid"].decode()),

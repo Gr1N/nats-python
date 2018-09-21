@@ -136,7 +136,12 @@ def test_request_msgpack():
         with NATSClient(socket_timeout=2) as client:
 
             def callback(message):
-                client.publish(message.reply, payload=msgpack.packb(32))
+                client.publish(
+                    message.reply,
+                    payload=msgpack.packb(
+                        {b"v": 3338} if message.payload else {b"v": 32}
+                    ),
+                )
 
             client.subscribe(
                 "test-subject", callback=callback, queue="test-queue", max_messages=2
@@ -153,13 +158,13 @@ def test_request_msgpack():
         resp = client.request("test-subject")
         assert resp.subject.startswith("_INBOX.")
         assert resp.reply == ""
-        assert msgpack.unpackb(resp.payload) == 32
+        assert msgpack.unpackb(resp.payload) == {b"v": 32}
 
         # request with payload
         resp = client.request("test-subject", payload=msgpack.packb("test-payload"))
         assert resp.subject.startswith("_INBOX.")
         assert resp.reply == ""
-        assert msgpack.unpackb(resp.payload) == 32
+        assert msgpack.unpackb(resp.payload) == {b"v": 3338}
 
     t.join()
 
