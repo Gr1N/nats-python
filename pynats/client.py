@@ -25,14 +25,14 @@ MSG_OP = b"MSG"
 OK_OP = b"+OK"
 ERR_OP = b"-ERR"
 
-INFO_RE = re.compile(b"^INFO\s+([^\r\n]+)\r\n")
-PING_RE = re.compile(b"^PING\r\n")
-PONG_RE = re.compile(b"^PONG\r\n")
+INFO_RE = re.compile(rb"^INFO\s+([^\r\n]+)\r\n")
+PING_RE = re.compile(rb"^PING\r\n")
+PONG_RE = re.compile(rb"^PONG\r\n")
 MSG_RE = re.compile(
-    b"^MSG\s+(?P<subject>[^\s\r\n]+)\s+(?P<sid>[^\s\r\n]+)\s+(?P<reply>([^\s\r\n]+)[^\S\r\n]+)?(?P<size>\d+)\r\n"  # noqa
+    rb"^MSG\s+(?P<subject>[^\s\r\n]+)\s+(?P<sid>[^\s\r\n]+)\s+(?P<reply>([^\s\r\n]+)[^\S\r\n]+)?(?P<size>\d+)\r\n"  # noqa
 )
-OK_RE = re.compile(b"^\+OK\s*\r\n")
-ERR_RE = re.compile(b"^-ERR\s+('.+')?\r\n")
+OK_RE = re.compile(rb"^\+OK\s*\r\n")
+ERR_RE = re.compile(rb"^-ERR\s+('.+')?\r\n")
 
 _CRLF_ = b"\r\n"
 _SPC_ = b" "
