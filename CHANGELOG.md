@@ -1,10 +1,10 @@
 # Changelog for nats-python
 
-## 0.4.0 (2018-XX-XX)
+## 0.4.0 (2018-09-24)
 
 - Use `BytesIO` as read buffer
 
-## 0.3.0 (2018-09-25)
+## 0.3.0 (2018-09-21)
 
 - Improved receive messages logic
 - Fixed regex deprecation warnings
