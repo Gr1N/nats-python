@@ -266,19 +266,19 @@ class NATSClient:
         return command, result
 
     def _readline(self, *, size: int = None) -> bytes:
-        read = b""
+        read = io.BytesIO()
 
         while True:
             line = cast(bytes, self._socket_file.readline())
-            read += line
+            read.write(line)
 
             if size is not None:
-                if len(self._strip(read)) == size:
+                if read.tell() == size + len(_CRLF_):
                     break
             elif line.endswith(_CRLF_):
                 break
 
-        return read
+        return read.getvalue()
 
     def _strip(self, line: bytes) -> bytes:
         return line[: -len(_CRLF_)]

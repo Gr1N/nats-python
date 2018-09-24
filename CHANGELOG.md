@@ -2,6 +2,8 @@
 
 ## 0.4.0 (2018-XX-XX)
 
+- Use `BytesIO` as read buffer
+
 ## 0.3.0 (2018-09-25)
 
 - Improved receive messages logic
