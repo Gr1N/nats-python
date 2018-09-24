@@ -1,5 +1,7 @@
 # Changelog for nats-python
 
+## 0.5.0 (2018-XX-XX)
+
 ## 0.4.0 (2018-09-24)
 
 - Use `BytesIO` as read buffer
