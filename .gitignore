@@ -54,7 +54,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-pyproject.lock
+poetry.lock
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

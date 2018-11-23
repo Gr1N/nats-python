@@ -47,7 +47,7 @@ python = "^3.6"
 dataclasses = { version = "*", python = "~3.6" }
 
 [tool.poetry.dev-dependencies]
-black = "*"
+black = { version = "*", allows-prereleases = true }
 flake8 = "*"
 flake8-bugbear = "*"
 isort = "*"
