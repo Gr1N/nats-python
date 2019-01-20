@@ -8,10 +8,10 @@ class NATSError(Exception):
 class NATSUnexpectedResponse(NATSError):
     def __init__(self, line: bytes, *args, **kwargs) -> None:
         self.line = line
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
 
 class NATSInvalidResponse(NATSError):
     def __init__(self, line: bytes, *args, **kwargs) -> None:
         self.line = line
-        super().__init__(*args, **kwargs)
+        super().__init__()
