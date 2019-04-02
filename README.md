@@ -1,4 +1,6 @@
-# nats-python [![Build Status](https://travis-ci.org/Gr1N/nats-python.svg?branch=master)](https://travis-ci.org/Gr1N/nats-python) [![codecov](https://codecov.io/gh/Gr1N/nats-python/branch/master/graph/badge.svg)](https://codecov.io/gh/Gr1N/nats-python) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+# nats-python 
+
+[![Build Status](https://travis-ci.org/Gr1N/nats-python.svg?branch=master)](https://travis-ci.org/Gr1N/nats-python) [![codecov](https://codecov.io/gh/Gr1N/nats-python/branch/master/graph/badge.svg)](https://codecov.io/gh/Gr1N/nats-python) ![PyPI](https://img.shields.io/pypi/v/nats-python.svg?label=pypi%20version) ![PyPI - Downloads](https://img.shields.io/pypi/dm/nats-python.svg?label=pypi%20downloads)
 
 Python client for NATS messaging system.
 
