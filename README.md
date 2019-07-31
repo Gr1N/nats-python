@@ -1,6 +1,6 @@
-# nats-python 
+# nats-python
 
-[![Build Status](https://travis-ci.org/Gr1N/nats-python.svg?branch=master)](https://travis-ci.org/Gr1N/nats-python) [![codecov](https://codecov.io/gh/Gr1N/nats-python/branch/master/graph/badge.svg)](https://codecov.io/gh/Gr1N/nats-python) ![PyPI](https://img.shields.io/pypi/v/nats-python.svg?label=pypi%20version) ![PyPI - Downloads](https://img.shields.io/pypi/dm/nats-python.svg?label=pypi%20downloads)
+[![Build Status](https://cloud.drone.io/api/badges/Gr1N/nats-python/status.svg)](https://cloud.drone.io/Gr1N/nats-python) [![codecov](https://codecov.io/gh/Gr1N/nats-python/branch/master/graph/badge.svg)](https://codecov.io/gh/Gr1N/nats-python) ![PyPI](https://img.shields.io/pypi/v/nats-python.svg?label=pypi%20version) ![PyPI - Downloads](https://img.shields.io/pypi/dm/nats-python.svg?label=pypi%20downloads)
 
 Python client for NATS messaging system.
 
@@ -10,29 +10,39 @@ Go to the [asyncio-nats](https://github.com/nats-io/asyncio-nats) project, if yo
 
 ## Installation
 
-    $ pip install nats-python
+```sh
+$ pip install nats-python
+```
 
 ## Usage
 
-    from pynats import NATSClient
+```python
+from pynats import NATSClient
 
-    with NATSClient() as client:
-        client.publish("test-subject", payload=b"test-payload")
+with NATSClient() as client:
+    client.publish("test-subject", payload=b"test-payload")
+```
 
 ## Contributing
 
 To work on the `nats-python` codebase, you'll want to clone the project locally and install the required dependencies via [poetry](https://poetry.eustace.io):
 
-    $ git clone git@github.com:Gr1N/nats-python.git
-    $ poetry install
+```sh
+$ git clone git@github.com:Gr1N/nats-python.git
+$ make install
+```
 
 To run tests and linters use command below:
 
-    $ poetry run tox
+```sh
+$ make lint && make test
+```
 
 If you want to run only tests or linters you can explicitly specify which test environment you want to run, e.g.:
 
-    $ poetry run tox -e py37-tests
+```sh
+$ make lint-black
+```
 
 ## License
 
