@@ -1,5 +1,7 @@
 # Changelog for nats-python
 
+## 0.6.0 (2019-XX-XX)
+
 ## 0.5.0 (2019-08-27)
 
 - Fixed passing of subscription queue name to the NATS server, #3
