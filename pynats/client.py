@@ -166,7 +166,7 @@ class NATSClient:
         sub = NATSSubscription(
             sid=self._ssid,
             subject=subject,
-            queue="",
+            queue=queue,
             callback=callback,
             max_messages=max_messages,
         )

@@ -2,6 +2,8 @@
 
 ## 0.5.0 (2018-XX-XX)
 
+- Fixed passing of subscription queue name to the NATS server, #3
+
 ## 0.4.0 (2018-09-24)
 
 - Use `BytesIO` as read buffer
