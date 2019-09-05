@@ -179,3 +179,15 @@ def test_request_timeout(nats_url):
     with NATSClient(nats_url, socket_timeout=2) as client:
         with pytest.raises(socket.timeout):
             client.request("test-subject")
+
+
+def test_exception_on_disconnect(nats_url):
+    with NATSClient(nats_url, socket_timeout=2) as client:
+        client.subscribe(
+            "test-subject", callback=lambda x: x, queue="test-queue", max_messages=2
+        )
+
+        client._socket_file.readline = lambda: b""
+
+        with pytest.raises(ConnectionResetError):
+            client.wait()

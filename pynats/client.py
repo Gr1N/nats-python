@@ -272,6 +272,9 @@ class NATSClient:
             line = cast(bytes, self._socket_file.readline())
             read.write(line)
 
+            if len(line) == 0:
+                raise ConnectionResetError(self)
+
             if size is not None:
                 if read.tell() == size + len(_CRLF_):
                     break
