@@ -6,7 +6,7 @@ import time
 import msgpack
 import pytest
 
-from pynats import NATSClient
+from pynats import NATSClient, NATSInvalidSchemeError
 
 
 @pytest.fixture
@@ -44,6 +44,20 @@ def test_reconnect(nats_url):
     client.ping()
 
     client.close()
+
+
+def test_tls_connect():
+    client = NATSClient("tls://127.0.0.1:4224", verbose=True)
+
+    client.connect()
+    client.ping()
+
+
+def test_invalid_scheme():
+    client = NATSClient("http://127.0.0.1:4224", verbose=True)
+
+    with pytest.raises(NATSInvalidSchemeError):
+        client.connect()
 
 
 def test_subscribe_unsubscribe(nats_url):
