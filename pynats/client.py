@@ -2,6 +2,7 @@ import io
 import json
 import re
 import socket
+import ssl
 from dataclasses import dataclass
 from typing import BinaryIO, Callable, Dict, Match, Optional, Pattern, Tuple, Union
 from urllib.parse import urlparse
@@ -10,7 +11,10 @@ import pkg_resources
 
 from pynats.exceptions import (
     NATSInvalidResponse,
+    NATSInvalidSchemeError,
     NATSReadSocketError,
+    NATSTCPConnectionRequiredError,
+    NATSTLSConnectionRequiredError,
     NATSUnexpectedResponse,
 )
 from pynats.nuid import NUID
@@ -95,7 +99,10 @@ class NATSClient:
         name: str = "nats-python",
         verbose: bool = False,
         pedantic: bool = False,
-        ssl_required: bool = False,
+        tls_cacert: Optional[str] = None,
+        tls_client_cert: Optional[str] = None,
+        tls_client_key: Optional[str] = None,
+        tls_verify: bool = False,
         socket_timeout: float = None,
         socket_keepalive: bool = False,
     ) -> None:
@@ -105,9 +112,14 @@ class NATSClient:
             "port": parsed.port,
             "username": parsed.username,
             "password": parsed.password,
+            "scheme": parsed.scheme,
             "name": name,
             "lang": "python",
             "protocol": 0,
+            "tls_cacert": tls_cacert,
+            "tls_client_cert": tls_client_cert,
+            "tls_client_key": tls_client_key,
+            "tls_verify": tls_verify,
             "version": pkg_resources.get_distribution("nats-python").version,
             "verbose": verbose,
             "pedantic": pedantic,
@@ -131,6 +143,41 @@ class NATSClient:
     def __exit__(self, type_, value, traceback) -> None:
         self.close()
 
+    def _connect_tcp(self) -> None:
+        self._send_connect_command()
+        _command, result = self._recv(INFO_RE)
+        server_info = json.loads(result.group(1))
+        if server_info.get("tls_required", False):
+            raise NATSTLSConnectionRequiredError("server enabled TLS connection")
+
+    def _connect_tls(self) -> None:
+        _command, result = self._recv(INFO_RE)
+        server_info = json.loads(result.group(1))
+        if not server_info.get("tls_required", False):
+            raise NATSTCPConnectionRequiredError("server disabled TLS connection")
+
+        ctx = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
+        if self._conn_options["tls_verify"]:
+            if self._conn_options["tls_cacert"] is not None:
+                ctx.load_verify_locations(cafile=str(self._conn_options["tls_cacert"]))
+            if (
+                self._conn_options["tls_client_cert"] is not None
+                and self._conn_options["tls_client_key"] is not None
+            ):
+                ctx.load_cert_chain(
+                    certfile=str(self._conn_options["tls_client_cert"]),
+                    keyfile=str(self._conn_options["tls_client_key"]),
+                )
+        else:
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+
+        hostname = str(self._conn_options["hostname"])
+        self._socket = ctx.wrap_socket(self._socket, server_hostname=hostname)
+        self._socket_file = self._socket.makefile("rb")
+        self._send_connect_command()
+        self._recv(OK_RE)
+
     def connect(self) -> None:
         sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
 
@@ -144,8 +191,13 @@ class NATSClient:
         self._socket_file = sock.makefile("rb")
         self._socket = sock
 
-        self._send_connect_command()
-        self._recv(INFO_RE)
+        scheme = self._conn_options["scheme"]
+        if scheme == "nats":
+            self._connect_tcp()
+        elif scheme == "tls":
+            self._connect_tls()
+        else:
+            raise NATSInvalidSchemeError(f"got unsupported URI scheme: {scheme}")
 
     def close(self) -> None:
         self._socket.shutdown(socket.SHUT_RDWR)
