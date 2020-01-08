@@ -1,6 +1,6 @@
 # nats-python
 
-[![Build Status](https://cloud.drone.io/api/badges/Gr1N/nats-python/status.svg)](https://cloud.drone.io/Gr1N/nats-python) [![codecov](https://codecov.io/gh/Gr1N/nats-python/branch/master/graph/badge.svg)](https://codecov.io/gh/Gr1N/nats-python) ![PyPI](https://img.shields.io/pypi/v/nats-python.svg?label=pypi%20version) ![PyPI - Downloads](https://img.shields.io/pypi/dm/nats-python.svg?label=pypi%20downloads)
+[![Build Status](https://github.com/Gr1N/nats-python/workflows/default/badge.svg)](https://github.com/Gr1N/nats-python/actions?query=workflow%3Adefault) [![codecov](https://codecov.io/gh/Gr1N/nats-python/branch/master/graph/badge.svg)](https://codecov.io/gh/Gr1N/nats-python) ![PyPI](https://img.shields.io/pypi/v/nats-python.svg?label=pypi%20version) ![PyPI - Downloads](https://img.shields.io/pypi/dm/nats-python.svg?label=pypi%20downloads)
 
 Python client for NATS messaging system.
 

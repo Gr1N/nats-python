@@ -1,0 +1,44 @@
+name: default
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      nats:
+        image: nats:2
+        ports:
+          - 4222/tcp
+
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: Gr1N/setup-poetry@v1
+        with:
+          poetry-version: 1.0.0
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.python-version }}-poetry-
+      - run: make install-deps
+      - run: make lint
+        if: matrix.python-version == 3.8
+      - run: make test
+        env:
+          NATS_URL: nats://0.0.0.0:${{ job.services.nats.ports['4222'] }}
+      - run: make codecov
+        if: matrix.python-version == 3.8
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
