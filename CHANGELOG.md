@@ -1,5 +1,7 @@
 # Changelog for nats-python
 
+## 0.7.0 (2020-XX-XX)
+
 ## 0.6.0 (2020-01-08)
 
 - Added Python 3.8.* support, #10
