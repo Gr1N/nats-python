@@ -3,7 +3,17 @@ import json
 import re
 import socket
 from dataclasses import dataclass
-from typing import Callable, Dict, Match, Optional, Pattern, Tuple, Union, cast
+from typing import (
+    BinaryIO,
+    Callable,
+    Dict,
+    Match,
+    Optional,
+    Pattern,
+    Tuple,
+    Union,
+    cast,
+)
 from urllib.parse import urlparse
 
 import pkg_resources
@@ -110,7 +120,7 @@ class NATSClient:
         }
 
         self._socket: socket.socket
-        self._socket_file: io.TextIOWrapper
+        self._socket_file: BinaryIO
         self._socket_options = {
             "timeout": socket_timeout,
             "keepalive": socket_keepalive,

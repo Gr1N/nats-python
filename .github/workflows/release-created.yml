@@ -1,0 +1,35 @@
+name: release-created
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - uses: Gr1N/setup-poetry@v1
+        with:
+          poetry-version: 1.0.0
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-3.8-poetry-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-3.8-poetry-
+      - run: make install-deps
+      - run: make publish
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      - uses: appleboy/telegram-action@0.0.7
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: markdown
+          message: ${{ github.repository }} publish ${{ github.ref }} succeeded

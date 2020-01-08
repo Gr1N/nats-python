@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 88
-target-version = ["py36", "py37"]
+target-version = ["py36", "py37", "py38"]
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -61,7 +61,7 @@ python = "^3.6"
 dataclasses = { version = ">=0.6.0", python = "~3.6" }
 
 [tool.poetry.dev-dependencies]
-black = { version = ">=18.9b0", allows-prereleases = true }
+black = { version = ">=18.9b0", allow-prereleases = true }
 codecov = ">=2.0.15"
 flake8 = ">=3.6.0"
 flake8-bugbear = ">=18.8.0"
