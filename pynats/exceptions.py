@@ -15,3 +15,9 @@ class NATSInvalidResponse(NATSError):
     def __init__(self, line: bytes, *args, **kwargs) -> None:
         self.line = line
         super().__init__()
+
+
+class NATSSocketError(NATSError):
+    def __init__(self, line: bytes, *args, **kwargs) -> None:
+        self.line = line
+        super().__init__()

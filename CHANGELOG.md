@@ -2,6 +2,8 @@
 
 ## 0.7.0 (2020-XX-XX)
 
+- Fixed issue when threads are blocked on close while reading, #11 by @richard78917
+
 ## 0.6.0 (2020-01-08)
 
 - Added Python 3.8.* support, #10
