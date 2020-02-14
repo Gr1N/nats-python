@@ -18,7 +18,11 @@ from urllib.parse import urlparse
 
 import pkg_resources
 
-from pynats.exceptions import NATSInvalidResponse, NATSUnexpectedResponse
+from pynats.exceptions import (
+    NATSInvalidResponse,
+    NATSSocketError,
+    NATSUnexpectedResponse,
+)
 from pynats.nuid import NUID
 
 __all__ = ("NATSSubscription", "NATSMessage", "NATSClient")
@@ -154,6 +158,7 @@ class NATSClient:
         self._recv(INFO_RE)
 
     def close(self) -> None:
+        self._socket.shutdown(socket.SHUT_RDWR)
         self._socket_file.close()
         self._socket.close()
 
@@ -279,7 +284,11 @@ class NATSClient:
         read = io.BytesIO()
 
         while True:
-            line = cast(bytes, self._socket_file.readline())
+            raw_bytes = self._socket_file.readline()
+            if not raw_bytes:
+                raise NATSSocketError(b"unable to read from socket")
+
+            line = cast(bytes, raw_bytes)
             read.write(line)
 
             if size is not None:

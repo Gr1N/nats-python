@@ -7,6 +7,7 @@ import msgpack
 import pytest
 
 from pynats import NATSClient
+from pynats.exceptions import NATSSocketError
 
 
 @pytest.fixture
@@ -179,3 +180,24 @@ def test_request_timeout(nats_url):
     with NATSClient(nats_url, socket_timeout=2) as client:
         with pytest.raises(socket.timeout):
             client.request("test-subject")
+
+
+def test_graceful_shutdown(nats_url):
+    def worker(client, connected_event):
+        client.connect()
+        connected_event.set()
+        try:
+            client.wait()
+        except NATSSocketError:
+            assert True
+        except Exception:
+            raise AssertionError("unexpected Exception raised")
+
+    client = NATSClient(nats_url)
+    connected_event = threading.Event()
+    thread = threading.Thread(target=worker, args=[client, connected_event])
+    thread.start()
+    assert connected_event.wait(5), "unable to connect"
+    client.close()
+    thread.join(5)
+    assert not thread.is_alive(), "thread did not finish"
