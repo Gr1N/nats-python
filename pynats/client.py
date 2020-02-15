@@ -252,7 +252,7 @@ class NATSClient:
             return value
         elif isinstance(value, str):
             return value.encode()
-        elif isinstance(value, int):
+        elif isinstance(value, int):  # pragma: no branch
             return f"{value:d}".encode()
 
         raise RuntimeError(f"got unsupported type for encoding: type={type(value)}")
@@ -283,7 +283,7 @@ class NATSClient:
             if size is not None:
                 if read.tell() == size + len(_CRLF_):
                     break
-            elif line.endswith(_CRLF_):
+            elif line.endswith(_CRLF_):  # pragma: no branch
                 break
 
         return read.getvalue()
