@@ -3,24 +3,14 @@ import json
 import re
 import socket
 from dataclasses import dataclass
-from typing import (
-    BinaryIO,
-    Callable,
-    Dict,
-    Match,
-    Optional,
-    Pattern,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import BinaryIO, Callable, Dict, Match, Optional, Pattern, Tuple, Union
 from urllib.parse import urlparse
 
 import pkg_resources
 
 from pynats.exceptions import (
     NATSInvalidResponse,
-    NATSSocketError,
+    NATSReadSocketError,
     NATSUnexpectedResponse,
 )
 from pynats.nuid import NUID
@@ -284,11 +274,10 @@ class NATSClient:
         read = io.BytesIO()
 
         while True:
-            raw_bytes = self._socket_file.readline()
-            if not raw_bytes:
-                raise NATSSocketError(b"unable to read from socket")
+            line = self._socket_file.readline()
+            if not line:
+                raise NATSReadSocketError()
 
-            line = cast(bytes, raw_bytes)
             read.write(line)
 
             if size is not None:

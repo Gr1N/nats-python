@@ -7,7 +7,7 @@ import msgpack
 import pytest
 
 from pynats import NATSClient
-from pynats.exceptions import NATSSocketError
+from pynats.exceptions import NATSReadSocketError
 
 
 @pytest.fixture
@@ -188,7 +188,7 @@ def test_graceful_shutdown(nats_url):
         connected_event.set()
         try:
             client.wait()
-        except NATSSocketError:
+        except NATSReadSocketError:
             assert True
         except Exception:
             raise AssertionError("unexpected Exception raised")
