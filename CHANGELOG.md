@@ -1,5 +1,7 @@
 # Changelog for nats-python
 
+## 0.8.0 (2020-XX-XX)
+
 ## 0.7.0 (2020-02-15)
 
 - Fixed issue when threads are blocked on close while reading, #11 by @richard78917
