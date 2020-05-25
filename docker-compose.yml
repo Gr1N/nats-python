@@ -5,3 +5,11 @@ services:
     image: nats:2
     ports:
       - 4222:4222
+  nats-tls:
+    image: nats:2-alpine
+    ports:
+      - 4224:4224
+    volumes:
+      - ./test-entrypoint.sh:/usr/local/bin/test-entrypoint.sh:ro
+    entrypoint:
+      - /usr/local/bin/test-entrypoint.sh
