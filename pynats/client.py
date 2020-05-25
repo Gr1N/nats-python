@@ -144,7 +144,6 @@ class NATSClient:
         self.close()
 
     def _connect_tcp(self) -> None:
-        self._send_connect_command()
         _command, result = self._recv(INFO_RE)
         server_info = json.loads(result.group(1))
         if server_info.get("tls_required", False):
@@ -175,8 +174,6 @@ class NATSClient:
         hostname = str(self._conn_options["hostname"])
         self._socket = ctx.wrap_socket(self._socket, server_hostname=hostname)
         self._socket_file = self._socket.makefile("rb")
-        self._send_connect_command()
-        self._recv(OK_RE)
 
     def connect(self) -> None:
         sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
@@ -198,6 +195,9 @@ class NATSClient:
             self._connect_tls()
         else:
             raise NATSInvalidSchemeError(f"got unsupported URI scheme: {scheme}")
+        self._send_connect_command()
+        if self._conn_options["verbose"]:
+            self._recv(OK_RE)
 
     def close(self) -> None:
         self._socket.shutdown(socket.SHUT_RDWR)

@@ -15,6 +15,11 @@ def nats_url():
     return os.environ.get("NATS_URL", "nats://127.0.0.1:4222")
 
 
+@pytest.fixture
+def nats_tls_url():
+    return os.environ.get("NATS_TLS_URL", "tls://127.0.0.1:4224")
+
+
 def test_connect_and_close(nats_url):
     client = NATSClient(nats_url, socket_timeout=2)
 
@@ -47,15 +52,16 @@ def test_reconnect(nats_url):
     client.close()
 
 
-def test_tls_connect():
-    client = NATSClient("tls://127.0.0.1:4224", verbose=True)
+def test_tls_connect(nats_tls_url):
+    client = NATSClient(nats_tls_url, socket_timeout=2)
 
     client.connect()
     client.ping()
+    client.close()
 
 
 def test_invalid_scheme():
-    client = NATSClient("http://127.0.0.1:4224", verbose=True)
+    client = NATSClient("http://127.0.0.1:4224")
 
     with pytest.raises(NATSInvalidSchemeError):
         client.connect()
