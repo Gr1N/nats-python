@@ -102,6 +102,7 @@ class NATSClient:
         tls_cacert: Optional[str] = None,
         tls_client_cert: Optional[str] = None,
         tls_client_key: Optional[str] = None,
+        tls_hostname: Optional[str] = None,
         tls_verify: bool = False,
         socket_timeout: float = None,
         socket_keepalive: bool = False,
@@ -119,6 +120,7 @@ class NATSClient:
             "tls_cacert": tls_cacert,
             "tls_client_cert": tls_client_cert,
             "tls_client_key": tls_client_key,
+            "tls_hostname": tls_hostname,
             "tls_verify": tls_verify,
             "version": pkg_resources.get_distribution("nats-python").version,
             "verbose": verbose,
@@ -156,22 +158,25 @@ class NATSClient:
             raise NATSTCPConnectionRequiredError("server disabled TLS connection")
 
         ctx = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
-        if self._conn_options["tls_verify"]:
-            if self._conn_options["tls_cacert"] is not None:
-                ctx.load_verify_locations(cafile=str(self._conn_options["tls_cacert"]))
-            if (
-                self._conn_options["tls_client_cert"] is not None
-                and self._conn_options["tls_client_key"] is not None
-            ):
-                ctx.load_cert_chain(
-                    certfile=str(self._conn_options["tls_client_cert"]),
-                    keyfile=str(self._conn_options["tls_client_key"]),
-                )
-        else:
+        if not self._conn_options["tls_verify"]:
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
 
+        if self._conn_options["tls_cacert"] is not None:
+            ctx.load_verify_locations(cafile=str(self._conn_options["tls_cacert"]))
+        if (
+            self._conn_options["tls_client_cert"] is not None
+            or self._conn_options["tls_client_key"] is not None
+        ):
+            ctx.load_cert_chain(
+                certfile=str(self._conn_options["tls_client_cert"]),
+                keyfile=str(self._conn_options["tls_client_key"]),
+            )
+
         hostname = str(self._conn_options["hostname"])
+        if self._conn_options["tls_hostname"] is not None:
+            hostname = str(self._conn_options["tls_hostname"])
+
         self._socket = ctx.wrap_socket(self._socket, server_hostname=hostname)
         self._socket_file = self._socket.makefile("rb")
 
