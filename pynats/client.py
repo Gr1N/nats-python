@@ -81,6 +81,26 @@ class NATSMessage:
     payload: bytes
 
 
+@dataclass
+class NATSConnOptions:
+    hostname: Optional[str]
+    port: Optional[int]
+    username: Optional[str]
+    password: Optional[str]
+    scheme: str
+    name: str = "nats-python"
+    lang: str = "python"
+    protocol: int = 0
+    tls_cacert: Optional[str] = None
+    tls_client_cert: Optional[str] = None
+    tls_client_key: Optional[str] = None
+    tls_hostname: Optional[str] = None
+    tls_verify: bool = False
+    version: str = pkg_resources.get_distribution("nats-python").version
+    verbose: bool = False
+    pedantic: bool = False
+
+
 class NATSClient:
     __slots__ = (
         "_conn_options",
@@ -108,24 +128,21 @@ class NATSClient:
         socket_keepalive: bool = False,
     ) -> None:
         parsed = urlparse(url)
-        self._conn_options = {
-            "hostname": parsed.hostname,
-            "port": parsed.port,
-            "username": parsed.username,
-            "password": parsed.password,
-            "scheme": parsed.scheme,
-            "name": name,
-            "lang": "python",
-            "protocol": 0,
-            "tls_cacert": tls_cacert,
-            "tls_client_cert": tls_client_cert,
-            "tls_client_key": tls_client_key,
-            "tls_hostname": tls_hostname,
-            "tls_verify": tls_verify,
-            "version": pkg_resources.get_distribution("nats-python").version,
-            "verbose": verbose,
-            "pedantic": pedantic,
-        }
+        self._conn_options = NATSConnOptions(
+            hostname=parsed.hostname,
+            port=parsed.port,
+            username=parsed.username,
+            password=parsed.password,
+            scheme=parsed.scheme,
+            name=name,
+            tls_cacert=tls_cacert,
+            tls_client_cert=tls_client_cert,
+            tls_client_key=tls_client_key,
+            tls_hostname=tls_hostname,
+            tls_verify=tls_verify,
+            verbose=verbose,
+            pedantic=pedantic,
+        )
 
         self._socket: socket.socket
         self._socket_file: BinaryIO
@@ -145,41 +162,6 @@ class NATSClient:
     def __exit__(self, type_, value, traceback) -> None:
         self.close()
 
-    def _connect_tcp(self) -> None:
-        _command, result = self._recv(INFO_RE)
-        server_info = json.loads(result.group(1))
-        if server_info.get("tls_required", False):
-            raise NATSTLSConnectionRequiredError("server enabled TLS connection")
-
-    def _connect_tls(self) -> None:
-        _command, result = self._recv(INFO_RE)
-        server_info = json.loads(result.group(1))
-        if not server_info.get("tls_required", False):
-            raise NATSTCPConnectionRequiredError("server disabled TLS connection")
-
-        ctx = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
-        if not self._conn_options["tls_verify"]:
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-
-        if self._conn_options["tls_cacert"] is not None:
-            ctx.load_verify_locations(cafile=str(self._conn_options["tls_cacert"]))
-        if (
-            self._conn_options["tls_client_cert"] is not None
-            or self._conn_options["tls_client_key"] is not None
-        ):
-            ctx.load_cert_chain(
-                certfile=str(self._conn_options["tls_client_cert"]),
-                keyfile=str(self._conn_options["tls_client_key"]),
-            )
-
-        hostname = str(self._conn_options["hostname"])
-        if self._conn_options["tls_hostname"] is not None:
-            hostname = str(self._conn_options["tls_hostname"])
-
-        self._socket = ctx.wrap_socket(self._socket, server_hostname=hostname)
-        self._socket_file = self._socket.makefile("rb")
-
     def connect(self) -> None:
         sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
 
@@ -188,21 +170,59 @@ class NATSClient:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
         sock.settimeout(self._socket_options["timeout"])
-        sock.connect((self._conn_options["hostname"], self._conn_options["port"]))
+        sock.connect((self._conn_options.hostname, self._conn_options.port))
 
         self._socket_file = sock.makefile("rb")
         self._socket = sock
 
-        scheme = self._conn_options["scheme"]
+        scheme = self._conn_options.scheme
+
         if scheme == "nats":
-            self._connect_tcp()
+            self._try_connection(tls_required=False)
         elif scheme == "tls":
+            self._try_connection(tls_required=True)
             self._connect_tls()
         else:
             raise NATSInvalidSchemeError(f"got unsupported URI scheme: {scheme}")
+
         self._send_connect_command()
-        if self._conn_options["verbose"]:
+        if self._conn_options.verbose:
             self._recv(OK_RE)
+
+    def _try_connection(self, *, tls_required: bool) -> None:
+        _, result = self._recv(INFO_RE)
+        server_info = json.loads(result.group(1))
+        server_tls_required = server_info.get("tls_required", False)
+
+        if not tls_required and server_tls_required:
+            raise NATSTLSConnectionRequiredError()
+        elif tls_required and not server_tls_required:
+            raise NATSTCPConnectionRequiredError()
+
+    def _connect_tls(self) -> None:
+        ctx = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
+        if not self._conn_options.tls_verify:
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+
+        if self._conn_options.tls_cacert is not None:
+            ctx.load_verify_locations(cafile=self._conn_options.tls_cacert)
+
+        if (
+            self._conn_options.tls_client_cert is not None
+            and self._conn_options.tls_client_key is not None
+        ):
+            ctx.load_cert_chain(
+                certfile=self._conn_options.tls_client_cert,
+                keyfile=self._conn_options.tls_client_key,
+            )
+
+        hostname = self._conn_options.hostname
+        if self._conn_options.tls_hostname is not None:
+            hostname = self._conn_options.tls_hostname
+
+        self._socket = ctx.wrap_socket(self._socket, server_hostname=hostname)
+        self._socket_file = self._socket.makefile("rb")
 
     def close(self) -> None:
         self._socket.shutdown(socket.SHUT_RDWR)
@@ -285,19 +305,19 @@ class NATSClient:
 
     def _send_connect_command(self) -> None:
         options = {
-            "name": self._conn_options["name"],
-            "lang": self._conn_options["lang"],
-            "protocol": self._conn_options["protocol"],
-            "version": self._conn_options["version"],
-            "verbose": self._conn_options["verbose"],
-            "pedantic": self._conn_options["pedantic"],
+            "name": self._conn_options.name,
+            "lang": self._conn_options.lang,
+            "protocol": self._conn_options.protocol,
+            "version": self._conn_options.version,
+            "verbose": self._conn_options.verbose,
+            "pedantic": self._conn_options.pedantic,
         }
 
-        if self._conn_options["username"] and self._conn_options["password"]:
-            options["user"] = self._conn_options["username"]
-            options["pass"] = self._conn_options["password"]
-        elif self._conn_options["username"]:
-            options["auth_token"] = self._conn_options["username"]
+        if self._conn_options.username and self._conn_options.password:
+            options["user"] = self._conn_options.username
+            options["pass"] = self._conn_options.password
+        elif self._conn_options.username:
+            options["auth_token"] = self._conn_options.username
 
         self._send(CONNECT_OP, json.dumps(options))
 

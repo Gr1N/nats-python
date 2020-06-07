@@ -27,29 +27,20 @@ class NATSInvalidResponse(NATSError):
 
 
 class NATSConnectionError(NATSError):
-    def __init__(self, line: str, *args, **kwargs) -> None:
-        self.line = line
-        super().__init__()
+    pass
 
 
 class NATSTCPConnectionRequiredError(NATSConnectionError):
-    def __init__(self, line: str, *args, **kwargs) -> None:
-        self.line = line
-        super().__init__(line, *args, **kwargs)
+    pass
 
 
 class NATSTLSConnectionRequiredError(NATSConnectionError):
-    def __init__(self, line: str, *args, **kwargs) -> None:
-        self.line = line
-        super().__init__(line, *args, **kwargs)
+    pass
 
 
 class NATSInvalidSchemeError(NATSConnectionError):
-    def __init__(self, line: str, *args, **kwargs) -> None:
-        self.line = line
-        super().__init__(line, *args, **kwargs)
+    pass
 
 
 class NATSReadSocketError(NATSError):
-    def __init__(self) -> None:
-        super().__init__()
+    pass

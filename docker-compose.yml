@@ -1,15 +1,15 @@
 version: "3.6"
 
 services:
-  nats:
-    image: nats:2
+  nats-plain:
+    image: nats:2-alpine
     ports:
       - 4222:4222
   nats-tls:
     image: nats:2-alpine
     ports:
-      - 4224:4224
+      - 4224:4222
     volumes:
-      - ./test-entrypoint.sh:/usr/local/bin/test-entrypoint.sh:ro
+      - ./docker-tls-entrypoint.sh:/usr/local/bin/docker-tls-entrypoint.sh:ro
     entrypoint:
-      - /usr/local/bin/test-entrypoint.sh
+      - /usr/local/bin/docker-tls-entrypoint.sh

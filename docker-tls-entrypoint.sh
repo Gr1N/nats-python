@@ -7,4 +7,4 @@ chmod +x mkcert
 ./mkcert -install
 ./mkcert -cert-file server-cert.pem -key-file server-key.pem localhost ::1
 
-exec nats-server --port 4224 --tls --tlscert server-cert.pem --tlskey server-key.pem
+exec nats-server --tls --tlscert server-cert.pem --tlskey server-key.pem

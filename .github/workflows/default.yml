@@ -6,12 +6,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      nats:
-        image: nats:2
-        ports:
-          - 4222/tcp
-
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
@@ -35,14 +29,11 @@ jobs:
       - run: make install-deps
       - run: make lint
         if: matrix.python-version == 3.8
-      - run: /usr/bin/docker run -d --name nats-tls -p 4224:4224 --entrypoint /usr/local/bin/test-entrypoint.sh -v "$(pwd)/test-entrypoint.sh":"/usr/local/bin/test-entrypoint.sh" nats:2-alpine && sleep 5
+      - run: docker-compose up -d && sleep 10
       - run: make test
-        env:
-          NATS_URL: nats://0.0.0.0:${{ job.services.nats.ports['4222'] }}
-          NATS_TLS_URL: tls://0.0.0.0:4224
+      - run: docker-compose down
+        if: always()
       - run: make codecov
         if: matrix.python-version == 3.8
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      - run: /usr/bin/docker rm --force nats-tls || echo "failed to remove container"
-        if: always()
