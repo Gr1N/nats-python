@@ -1,5 +1,7 @@
 # Changelog for nats-python
 
+## 0.9.0 (20XX-XX-XX)
+
 ## 0.8.0 (2020-06-21)
 
 - Added TSL support, #13 by @nineinchnick
