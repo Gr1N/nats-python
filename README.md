@@ -20,7 +20,21 @@ $ pip install nats-python
 from pynats import NATSClient
 
 with NATSClient() as client:
-    client.publish("test-subject", payload=b"test-payload")
+    # Connect
+    client.connect()
+    
+    # Subscribe
+    def callback(msg):
+        message = '%s' % msg
+        print('Received a message with subject ' + msg.subject + ': ' + message)
+
+    client.subscribe(subject="test-subject", callback=callback)
+   
+    # Publish a message
+    client.publish(subject="test-subject", payload=b"test-payload")
+    
+    # wait for 1 message
+    client.wait(count=1)
 ```
 
 ## Contributing
