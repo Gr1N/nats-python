@@ -28,7 +28,7 @@ lint-flake8:
 .PHONY: lint-isort
 lint-isort:
 	@echo "\033[92m< linting using isort...\033[0m"
-	@$(POETRY) run isort --check-only --diff --recursive .
+	@$(POETRY) run isort --check-only --diff .
 	@echo "\033[92m> done\033[0m"
 	@echo
 

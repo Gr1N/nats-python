@@ -10,18 +10,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
-          python-version: 3.8
-      - uses: Gr1N/setup-poetry@v1
+          python-version: 3.9
+      - uses: Gr1N/setup-poetry@v4
         with:
-          poetry-version: 1.0.0
-      - uses: actions/cache@v1
+          poetry-version: 1.1.5
+      - uses: actions/cache@v2
         with:
           path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-3.8-poetry-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-3.9-poetry-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-3.8-poetry-
+            ${{ runner.os }}-3.9-poetry-
       - run: make install-deps
       - run: make publish
         env:

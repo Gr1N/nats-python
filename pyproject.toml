@@ -19,15 +19,7 @@ exclude = '''
 
 [tool.isort]
 combine_as_imports = true
-default_section = "LOCALFOLDER"
-force_grid_wrap = false
-include_trailing_comma = true
-known_first_party = "nats"
-known_standard_library = "dataclasses"
-known_third_party = "msgpack,pkg_resources,pytest"
-line_length = 88
-multi_line_output = 3
-not_skip = "__init__.py"
+profile = "black"
 sections = "FUTURE,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
 skip = ".eggs,.tox,venv,.venv"
 
@@ -72,5 +64,5 @@ pytest = ">=4.1.0"
 pytest-cov = ">=2.6.1"
 
 [build-system]
-requires = ["poetry>=1.0"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
