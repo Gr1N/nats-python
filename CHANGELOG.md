@@ -2,6 +2,8 @@
 
 ## 0.9.0 (20XX-XX-XX)
 
+- Added Python 3.9.* support
+
 ## 0.8.0 (2020-06-21)
 
 - Added TSL support, #13 by @nineinchnick
