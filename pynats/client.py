@@ -163,7 +163,9 @@ class NATSClient:
         self.close()
 
     def connect(self) -> None:
-        sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+        family, socket_type, _, _, sockaddr = socket.getaddrinfo(self._conn_options.hostname, self._conn_options.port)[0]
+
+        sock = socket.socket(family=family, type=socket_type)
 
         sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         if self._socket_options["keepalive"]:
