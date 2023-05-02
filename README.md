@@ -42,6 +42,8 @@ To work on the `nats-python` codebase, you'll want to clone the project locally 
 
 ```sh
 $ git clone git@github.com:Gr1N/nats-python.git
+$ pip install poetry
+$ poetry install
 $ make install
 ```
 
