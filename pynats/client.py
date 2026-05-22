@@ -7,8 +7,6 @@ from dataclasses import dataclass
 from typing import BinaryIO, Callable, Dict, Match, Optional, Pattern, Tuple, Union
 from urllib.parse import urlparse
 
-import pkg_resources
-
 from pynats.exceptions import (
     NATSInvalidResponse,
     NATSInvalidSchemeError,
@@ -20,6 +18,9 @@ from pynats.exceptions import (
 from pynats.nuid import NUID
 
 __all__ = ("NATSSubscription", "NATSMessage", "NATSClient")
+
+DISTRIBUTION_NAME = "nats-python"
+DEFAULT_CLIENT_VERSION = "0.9.0-alpha.0"
 
 
 INFO_OP = b"INFO"
@@ -55,6 +56,21 @@ COMMANDS = {
 }
 
 INBOX_PREFIX = bytearray(b"_INBOX.")
+
+
+def _get_client_version() -> str:
+    try:
+        from importlib.metadata import PackageNotFoundError, version
+    except ImportError:  # pragma: no cover
+        try:
+            from importlib_metadata import PackageNotFoundError, version
+        except ImportError:
+            return DEFAULT_CLIENT_VERSION
+
+    try:
+        return version(DISTRIBUTION_NAME)
+    except PackageNotFoundError:
+        return DEFAULT_CLIENT_VERSION
 
 
 @dataclass
@@ -96,7 +112,7 @@ class NATSConnOptions:
     tls_client_key: Optional[str] = None
     tls_hostname: Optional[str] = None
     tls_verify: bool = False
-    version: str = pkg_resources.get_distribution("nats-python").version
+    version: str = _get_client_version()
     verbose: bool = False
     pedantic: bool = False
 
