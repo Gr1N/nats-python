@@ -221,3 +221,20 @@ def test_graceful_shutdown(nats_plain_url):
     client.close()
     thread.join(5)
     assert not thread.is_alive(), "thread did not finish"
+
+
+def test_request_with_existing_subscription(nats_plain_url):
+    received = []
+    with NATSClient(nats_plain_url, socket_timeout=2) as client:
+
+        def callback(message):
+            received.append(message)
+            client.publish(message.reply, payload=b"response")
+
+        sub = client.subscribe("request-with-subscription", callback=callback)
+        response = client.request("request-with-subscription", payload=b"question")
+
+        assert response.payload == b"response"
+        assert len(received) == 1
+        assert received[0].sid == sub.sid
+        assert received[0].payload == b"question"

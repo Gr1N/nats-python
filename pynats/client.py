@@ -286,7 +286,8 @@ class NATSClient:
         sub = self.subscribe(reply_subject, callback=callback, max_messages=1)
         self.auto_unsubscribe(sub)
         self.publish(subject, payload=payload, reply=reply_subject)
-        self.wait(count=1)
+        while sub.sid not in reply_messages:
+            self.wait(count=1)
 
         return reply_messages[sub.sid]
 
